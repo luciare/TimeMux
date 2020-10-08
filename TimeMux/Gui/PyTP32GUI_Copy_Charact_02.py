@@ -26,8 +26,8 @@ from PyqtTools.PlotModule import PlotterParameters as TimePltPars
 from PyqtTools.PlotModule import PSDPlotter as PSDPlt
 from PyqtTools.PlotModule import PSDParameters as PSDPltPars
 
-import PyqtTools.CharacterizationModule as Charact
-import PyqtTools.DataAcquisition_Time_Freq as AcqMod
+import Modules.CharacterizationModule as Charact
+import TimeMux.DataAcquisition_Time_Freq as AcqMod
 
 
 # estoy habrá que improtarlo de otra manera

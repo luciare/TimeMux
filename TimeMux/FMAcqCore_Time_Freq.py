@@ -18,12 +18,13 @@ class ChannelsConfig():
     Dec = None
     DCSwitch = np.array([0, 1, 0, 0, 0, 0, 0, 0, 0, 0, ], dtype=np.uint8)
     ACSwitch = np.array([1, 1, 1, 1, 1, 1, 1, 1, 1, 1], dtype=np.uint8)
-    DecDigital = np.array([0, 1, 0, 1, 1], dtype=np.uint8) # Ouput should be: P26
+    # DecDigital = np.array([0, 1, 0, 1, 1], dtype=np.uint8) # Ouput should be: P26
     # Events list
     DataEveryNEvent = None
     DataDoneEvent = None
         
-    def __init__(self, Channels, Cols=None, AcqDC=False, AcqAC=False,
+    def __init__(self, Channels, Cols=None,
+                 AcqDC=False, AcqAC=False, AcqDCAC=False,
                  ACGain=1e6, DCGain=10e3, AcqDiff=False, Range=5,
                  aiChannels=None, aoChannels=None, diChannels=None, 
                  doChannels=None, decoder=None, **kwargs):
@@ -35,16 +36,24 @@ class ChannelsConfig():
         
         self.ChNamesList = sorted(Channels)
         
-        self._InitAnalogInputs(aiChannels=aiChannels,
-                               Diff=AcqDiff,
-                               Range=Range,
-                               )
-        
         self.AcqAC = AcqAC
         self.AcqDC = AcqDC
+        self.AcqDCAC = AcqDCAC
         self.ACGain = ACGain
         self.DCGain = DCGain
         self.DOChannels = doChannels
+        
+        if AcqDCAC:
+            # self._InitAnalogInputsDCAC()
+            self._InitAnalogInputsDCAC(aiChannels=aiChannels,
+                                       Diff=AcqDiff,
+                                       Range=Range,
+                                       )
+        else:
+            self._InitAnalogInputs(aiChannels=aiChannels,
+                       Diff=AcqDiff,
+                       Range=Range,
+                       )
         
         if doChannels is not None:
             self.SwitchOut = DaqInt.WriteDigital(Channels=doChannels)
@@ -58,7 +67,7 @@ class ChannelsConfig():
                 for Col in Cols:
                     self.MuxChannelNames.append(Row + Col)
         
-    def _InitAnalogInputs(self, aiChannels, Diff, Range):
+    def _InitAnalogInputs(self, aiChannels, Diff=False, Range=5.0):
         self.ChannelIndex = {}
         InChans = []
 
@@ -80,7 +89,55 @@ class ChannelsConfig():
         # events linking
         self.AnalogInputs.EveryNEvent = self.EveryNEventCallBack
         self.AnalogInputs.DoneEvent = self.DoneEventCallBack
+    
+    def _InitAnalogInputsDCAC(self, aiChannels, Diff=False, Range=5.0):
+        self.ChannelIndex = {}
+        InChans = []
+        self.DCChannelIndex = {}
+        self.ACChannelIndex = {}
+
+        index = 0
+        sortindex = 0
+        for ch in self.ChNamesList:
+            InChans.append(aiChannels[ch][0])
+            self.DCChannelIndex[ch] = (index, sortindex)
+            index += 1
+            InChans.append(aiChannels[ch][1])
+            self.ACChannelIndex[ch] = (index, sortindex)
+            index += 1
+            sortindex += 1
+            
+        for ch in self.ChNamesList:
+            print (ch, ' DC -> ', aiChannels[ch][0], self.DCChannelIndex[ch])
+            print (ch, ' AC -> ', aiChannels[ch][1], self.ACChannelIndex[ch])
         
+        print('DCIndex', self.DCChannelIndex)            
+        print('ACIndex', self.ACChannelIndex)   
+        self.AnalogInputs = DaqInt.ReadAnalog(InChans=InChans)
+        self.AnalogInputs.EveryNEvent = self.EveryNEventCallBackDCAC
+        self.AnalogInputs.DoneEvent = self.DoneEventCallBack
+
+
+    # def _InitAnalogInputsDCAC(self, aiChannels, Diff=False, Range=5.0):
+    #     self.ChannelIndex = {}
+    #     InChans = []
+    #     InChansAC = []
+
+    #     index = 0
+    #     for ch in self.ChNamesList:
+    #         InChans.append(aiChannels[ch][0])
+    #         InChansAC.append(aiChannels[ch][1])
+
+    #         self.ChannelIndex[ch] = (index)
+    #         index += 1
+
+    #     self.AnalogInputs = DaqInt.ReadAnalog(InChans=InChans+InChansAC)
+    #     self.AnalogInputs.EveryNEvent = self.EveryNEventCallBackDCAC
+    #     self.AnalogInputs.DoneEvent = self.DoneEventCallBack
+    #     print('DC', InChans)
+    #     print('AC', InChansAC)
+    #     print('All', InChans+InChansAC)
+    #     print('ChnInd', self.ChannelIndex)
     def _InitAnalogOutputs(self, ChVgs, ChVds):
         print('ChVgs ->', ChVgs)
         print('ChVds ->', ChVds)
@@ -130,6 +187,17 @@ class ChannelsConfig():
                 sData[:, inds] = data[:, inds]
 
         return sData
+    
+    def _SortChannelsDCAC(self, data, SortDict):
+        (samps, inch) = data.shape
+        sData = np.zeros((samps, len(SortDict)))
+        for chn, inds in sorted(SortDict.items()):
+            if chn == 'Gate':
+                sData[:, 0] = data[:, inds]
+            else:
+                sData[:, inds[1]] = data[:, inds[0]]
+
+        return sData
 
     def EveryNEventCallBack(self, Data):
         _DataEveryNEvent = self.DataEveryNEvent
@@ -151,10 +219,21 @@ class ChannelsConfig():
                 _DataEveryNEvent(aiDataAC)
             elif self.AcqDC:
                 _DataEveryNEvent(aiDataDC)
-            
-            else:
-                _DataEveryNEvent(Data)
         
+    def EveryNEventCallBackDCAC(self, Data):
+        
+        _DataEveryNEvent = self.DataEveryNEvent
+        print(Data.shape)
+        if _DataEveryNEvent is not None:            
+            print('Sending DC DATA')
+            aiDataDC = self._SortChannelsDCAC(Data, 
+                                              self.DCChannelIndex)
+            aiDataDC = (aiDataDC-self.BiasVd) / self.DCGain
+            print('Sending AC DATA')
+            aiDataAC = self._SortChannelsDCAC(Data, 
+                                              self.ACChannelIndex)
+            aiDataAC = aiDataAC / self.ACGain
+            _DataEveryNEvent(aiDataDC, aiDataAC)
 
     def DoneEventCallBack(self, Data):
         print('Done callback')
@@ -174,29 +253,32 @@ class ChannelsConfig():
             print('AC')
             self.SetDigitalSignal(Signal=self.ACSwitch)
                        
+        self.Fs = Fs
         if EveryN is None:
-            EveryN = Refresh*Fs # TODO check this
-        self.AnalogInputs.ReadContData(Fs=Fs,
-                                       EverySamps=EveryN)
+            self.EveryN = Refresh*Fs # TODO check this
+            
+        self.AnalogInputs.ReadContData(Fs=self.Fs,
+                                       EverySamps=self.EveryN)
 
     def Stop(self):
         print('Stopppp')
-        
-        self.AnalogInputs.StopContData()
                 
-        if self.Vds is None:
+        if self.Vds is not None:
+            print('All to 0')
+            self.SetBias(Vgs=0, Vds=0)
+        
+        else:
             self.VgsOut.StopTask()
             self.VgsOut.SetVal(0)
             self.VgsOut.ClearTask()
             self.VgsOut = None
             self.VdsOut.ClearTask()
             self.VdsOut = None
-        
-        else:
-            self.SetBias(Vgs=0, Vds=0)
 
         if self.SwitchOut is not None:
             print('Clear Digital')
             self.SwitchOut.ClearTask()
             self.SwitchOut = None
+        
+        self.AnalogInputs.StopContData()
 
