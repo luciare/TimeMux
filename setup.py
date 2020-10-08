@@ -55,7 +55,7 @@ classifiers = ['Development Status :: 3 - Alpha',
                'Topic :: Scientific/Engineering',
                'Topic :: Software Development :: User Interfaces']
 
-setup(name="FreqMux",
+setup(name="TimeMux",
       version=_version,
       description="Library for Time Acquisition",
       long_description=long_description,
