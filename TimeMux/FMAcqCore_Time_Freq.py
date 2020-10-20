@@ -215,6 +215,7 @@ class ChannelsConfig():
                 print('ERROR')
                 aiData = np.hstack((aiDataDC, aiDataAC))
                 _DataEveryNEvent(aiData)
+                # _DataEveryNEvent(aiDataDC, aiDataAC)
             elif self.AcqAC:
                 _DataEveryNEvent(aiDataAC)
             elif self.AcqDC:
