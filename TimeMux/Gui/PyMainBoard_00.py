@@ -22,7 +22,7 @@ from pyqtgraph.parametertree import Parameter, ParameterTree
 import PyqtTools.FileModule as FileMod
 
 from PyqtTools.PlotModule import Plotter as TimePlt
-from PyqtTools.PlotModule import PlotterParameters as TimePltPars
+from PyqtTools.PlotModule import PlotterParameters as TimePltPars                                                         
 from PyqtTools.PlotModule import PSDPlotter as PSDPlt
 from PyqtTools.PlotModule import PSDParameters as PSDPltPars
 
@@ -248,12 +248,21 @@ class MainWindow(Qt.QWidget):
                     os.remove(FileName)
                 MaxSize = self.FileParameters.param('MaxSize').value()
                 ch = (list(self.SamplingPar.GetChannelsNames()))
-                self.threadSave = FileMod.DataSavingThread(FileName=FileName,
-                                                           nChannels=PlotterKwargs['nChannels'],
-                                                           MaxSize=MaxSize,
-                                                           Fs=self.SamplingPar.SampSet.param('Fs').value(),
-                                                           ChnNames=np.array(ch, dtype='S10'),
-                                                           )
+                if self.threadAcq.DaqInterface.AcqDCAC:
+                    # print('nchans -->', PlotterKwargs['nChannels']*2)
+                    self.threadSave = FileMod.DataSavingThread(FileName=FileName,
+                                                               nChannels=PlotterKwargs['nChannels']*2,
+                                                               MaxSize=MaxSize,
+                                                               Fs=self.SamplingPar.SampSet.param('Fs').value(),
+                                                               ChnNames=np.array(ch, dtype='S10'),
+                                                               )
+                else:
+                    self.threadSave = FileMod.DataSavingThread(FileName=FileName,
+                                                               nChannels=PlotterKwargs['nChannels'],
+                                                               MaxSize=MaxSize,
+                                                               Fs=self.SamplingPar.SampSet.param('Fs').value(),
+                                                               ChnNames=np.array(ch, dtype='S10'),
+                                                               )
                 self.threadSave.start()
 
             self.btnAcq.setText("Stop Gen")
@@ -291,10 +300,16 @@ class MainWindow(Qt.QWidget):
         self.OldTime = time.time()
 
         if self.threadSave is not None:
-            self.threadSave.AddData(self.threadAcq.aiData)
-            if self.RefreshGrapg:
-                self.threadSave.FileBuff.RefreshPlot()
-                self.RefreshGrapg = None
+            # print('aidata-->', self.threadAcq.aiData.shape)
+            if self.threadAcq.aiDataAC is not None:
+                data = np.hstack((self.threadAcq.aiData, self.threadAcq.aiDataAC))
+                # print('data-->', data.shape)
+                self.threadSave.AddData(data)
+            else:
+                self.threadSave.AddData(self.threadAcq.aiData)
+            # if self.RefreshGrapg:
+            #     self.threadSave.FileBuff.RefreshPlot()
+            #     self.RefreshGrapg = None
 
         if self.threadCharact is not None:
             if self.threadCharact.Stable and self.threadCharact.ACenable is True:

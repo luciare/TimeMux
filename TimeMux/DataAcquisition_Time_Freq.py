@@ -292,7 +292,7 @@ class DataAcquisitionThread(Qt.QThread):
     def NewDataTime(self, aiData, aiDataAC=None):
         self.aiData = aiData
         self.aiDataAC = aiDataAC
-        print('ACDATA-->', self.aiDataAC)
+        # print('ACDATA-->', self.aiDataAC)
         self.NewTimeData.emit()
     
     def NewDataFreq(self, aiData):
