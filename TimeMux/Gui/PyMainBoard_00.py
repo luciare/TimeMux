@@ -229,7 +229,7 @@ class MainWindow(Qt.QWidget):
                                                           ChannelsConfigKW=GenChanKwargs,
                                                           SampKw=GenKwargs,
                                                           aoChannels=aoChannels,
-                                                           DOChannels=DOChannels,
+                                                           # DOChannels=DOChannels,
                                                           aiChannels=aiChannels,
                                                           )
             self.threadAcq.NewTimeData.connect(self.on_NewSample)
@@ -305,7 +305,8 @@ class MainWindow(Qt.QWidget):
         if self.threadPlotter is not None:
             self.threadPlotter.AddData(self.threadAcq.aiData)
         if self.threadPlotterAC is not None:
-            self.threadPlotterAC.AddData(self.threadAcq.aiDataAC)
+            if self.threadAcq.aiDataAC is not None:
+                self.threadPlotterAC.AddData(self.threadAcq.aiDataAC)
 
         if self.threadPSDPlotter is not None:
             if self.threadAcq.aiDataAC is not None:
@@ -342,7 +343,7 @@ class MainWindow(Qt.QWidget):
                                                           ChannelsConfigKW=GenChanKwargs,
                                                           SampKw=GenKwargs,
                                                           aoChannels=aoChannels,
-                                                          DOChannels=DOChannels,
+                                                          # DOChannels=DOChannels,
                                                           aiChannels=aiChannels,
                                                           )
             self.threadAcq.NewTimeData.connect(self.on_NewSample)

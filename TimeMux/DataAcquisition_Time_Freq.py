@@ -9,8 +9,8 @@ from PyQt5 import Qt
 import pyqtgraph.parametertree.parameterTypes as pTypes
 import numpy as np
 
-# import Pyxi.FMAcqCore_Time_Freq as CoreMod
-import PyqtTools.FMAcqCore as CoreMod
+import TimeMux.FMAcqCore_Time_Freq as CoreMod
+# import PyqtTools.FMAcqCore as CoreMod
 
 SampSettingConf = ({'title': 'Channels Config',
                     'name': 'ChsConfig',
@@ -292,6 +292,7 @@ class DataAcquisitionThread(Qt.QThread):
     def NewDataTime(self, aiData, aiDataAC=None):
         self.aiData = aiData
         self.aiDataAC = aiDataAC
+        print('ACDATA-->', self.aiDataAC)
         self.NewTimeData.emit()
     
     def NewDataFreq(self, aiData):

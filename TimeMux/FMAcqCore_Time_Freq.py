@@ -165,8 +165,10 @@ class ChannelsConfig():
     
     def SetDigitalSignal(self, Signal):
         if not self.SwitchOut:
-            self.SwitchOut = DaqInt.WriteDigital(Channels=self.DOChannels)
-        self.SwitchOut.SetDigitalSignal(Signal)
+            if self.DOChannels is not None:
+                self.SwitchOut = DaqInt.WriteDigital(Channels=self.DOChannels)
+        if self.SwitchOut is not None:
+            self.SwitchOut.SetDigitalSignal(Signal)
         if self.Dec is not None:
             self.Dec.SetDigitalSignal(self.DecDigital)
 
