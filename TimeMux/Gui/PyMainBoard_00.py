@@ -161,8 +161,8 @@ class MainWindow(Qt.QWidget):
                 self.threadAcq.DaqInterface.SetBias(Vgs=Vgs, Vds=data)
     
     def on_NewConf(self):
-        self.PlotParams.SetChannels(self.SamplingPar.GetChannelsNames())
-        self.PlotParamsAC.SetChannels(self.SamplingPar.GetChannelsNames())
+        self.PlotParams.SetChannels(self.SamplingPar.GetChannelsNamesDC())
+        self.PlotParamsAC.SetChannels(self.SamplingPar.GetChannelsNamesAC())
         self.PsdPlotParams.ChannelConf = self.PlotParams.ChannelConf
         nChannels = self.PlotParams.param('nChannels').value()
         self.PsdPlotParams.param('nChannels').setValue(nChannels)
@@ -211,9 +211,10 @@ class MainWindow(Qt.QWidget):
 
         if self.PlotParams.param('PlotEnable').value():
             Pltkw = self.PlotParams.GetParams()
+            PltkwAC = self.PlotParamsAC.GetParams()
             self.threadPlotter = TimePlt(**Pltkw)
             self.threadPlotter.start()
-            self.threadPlotterAC = TimePlt(**Pltkw)
+            self.threadPlotterAC = TimePlt(**PltkwAC)
             self.threadPlotterAC.start()
 
         if self.PsdPlotParams.param('PlotEnable').value():
@@ -247,7 +248,7 @@ class MainWindow(Qt.QWidget):
                     print('Remove File')
                     os.remove(FileName)
                 MaxSize = self.FileParameters.param('MaxSize').value()
-                ch = (list(self.SamplingPar.GetChannelsNames()))
+                ch = (list(self.SamplingPar.GetChannelsNamesDC()))
                 if self.threadAcq.DaqInterface.AcqDCAC:
                     # print('nchans -->', PlotterKwargs['nChannels']*2)
                     self.threadSave = FileMod.DataSavingThread(FileName=FileName,
@@ -342,7 +343,7 @@ class MainWindow(Qt.QWidget):
             self.DcSaveKwargs = self.SwParams.GetSaveSweepsParams()
             
             self.threadCharact = Charact.StbDetThread(nChannels=self.PlotParams.GetParams()['nChannels'],
-                                                      ChnName=self.SamplingPar.GetChannelsNames(),
+                                                      ChnName=self.SamplingPar.GetChannelsNamesCharact(),
                                                       PlotterDemodKwargs=self.PsdPlotParams.GetParams(),
                                                       **self.SweepsKwargs
                                                       )

@@ -163,6 +163,7 @@ class SampSetParam(pTypes.GroupParameter):
         self.Channels.sigTreeStateChanged.connect(self.on_Ch_Changed)
         self.ChsConfig.param('AcqAC').sigValueChanged.connect(self.on_Acq_Changed)
         self.ChsConfig.param('AcqDC').sigValueChanged.connect(self.on_Acq_Changed)
+        self.ChsConfig.param('AcqDCAC').sigValueChanged.connect(self.on_Acq_Changed)
         self.Fs.sigValueChanged.connect(self.on_Fs_Changed)
 
     def on_Acq_Changed(self):
@@ -171,6 +172,8 @@ class SampSetParam(pTypes.GroupParameter):
                 self.Acq[p.name()] = p.value()
             if p.name() is 'AcqDC':
                 self.Acq[p.name()] = p.value()
+            if p.name() is 'AcqDCAC':
+                self.Acq[p.name()] = p.value()
         self.on_Fs_Changed()
         self.NewConf.emit()
 
@@ -178,6 +181,8 @@ class SampSetParam(pTypes.GroupParameter):
         if self.Chs:
             Index = 1
             if self.Acq['AcqDC'] and self.Acq['AcqAC'] is True:
+                Index = 2
+            if self.Acq['AcqDCAC']:
                 Index = 2
             if self.Fs.value() > (1e6/(len(self.Chs)*Index)):
                 self.SampSet.param('Fs').setValue(1e6/(len(self.Chs)*Index))
@@ -190,6 +195,53 @@ class SampSetParam(pTypes.GroupParameter):
         self.on_Fs_Changed()
         self.NewConf.emit()
 
+    def GetChannelsNamesCharact(self):
+        Ind = 0
+        ChNames = {}
+        acqTys = []
+        for Ch in self.Chs:
+            ChNames[Ch] = Ind
+            Ind += 1
+            
+        return ChNames
+    
+    def GetChannelsNamesDC(self):
+        Ind = 0
+        ChNames = {}
+        for Ch in self.Chs:
+                ChNames[Ch + 'DC'] = Ind
+                Ind += 1
+
+        return ChNames
+    
+    def GetChannelsNamesAC(self):
+        Ind = 0
+        ChNames = {}
+        for Ch in self.Chs:
+                ChNames[Ch + 'AC'] = Ind
+                Ind += 1
+
+        return ChNames
+    
+    def GetChannelsNames(self):
+        Ind = 0
+        ChNames = {}
+        acqTys = []
+        for tyn, tyv in self.Acq.items():
+            if tyv:
+                acqTys.append(tyn)
+
+        if 'AcqDC' in acqTys:
+            for Ch in self.Chs:
+                ChNames[Ch + 'DC'] = Ind
+                Ind += 1
+
+        if 'AcqAC' in acqTys:
+            for Ch in self.Chs:
+                ChNames[Ch + 'AC'] = Ind
+                Ind += 1
+
+        return ChNames
     def GetChannelsNames(self):
         Ind = 0
         ChNames = {}
