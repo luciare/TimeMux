@@ -13,6 +13,7 @@ from qtpy.QtWidgets import (QHeaderView, QCheckBox, QSpinBox, QLineEdit,
                             QInputDialog)
 
 from qtpy import QtWidgets, uic
+from datetime import datetime
 import numpy as np
 import time
 import os
@@ -66,9 +67,11 @@ class MainWindow(Qt.QWidget):
 
         self.btnAcq = Qt.QPushButton("Start Acq!")
         layout.addWidget(self.btnAcq)
-
         self.ResetGraph = Qt.QPushButton("Reset Graphics")
         layout.addWidget(self.ResetGraph)
+        self.FullTimer = Qt.QLabel()
+        layout.addWidget(self.FullTimer)
+        self.FullTimer.setText("0:00")
         
         self.threadAcq = None
         self.threadCharact = None
@@ -236,6 +239,8 @@ class MainWindow(Qt.QWidget):
             self.threadAcq.NewTimeData.connect(self.on_NewSample)
             self.threadAcq.start()
             self.on_ResetGraph()
+            self.ElapsedTime = 0.00
+            self.FullTimer.setText("0:00")
             PlotterKwargs = self.PlotParams.GetParams()
 
 #            FileName = self.Parameters.param('File Path').value()
@@ -247,6 +252,12 @@ class MainWindow(Qt.QWidget):
                 if os.path.isfile(FileName):
                     print('Remove File')
                     os.remove(FileName)
+                    
+                StartTime = datetime.now()
+                StartTimeStr = StartTime.strftime("__%d-%m-%Y_%H-%M-%S_")
+                FileName = FileName.split('.h5')[0] + StartTimeStr + ".h5"
+                # print('FileName2', FileName)
+                
                 MaxSize = self.FileParameters.param('MaxSize').value()
                 ch = (list(self.SamplingPar.GetChannelsNamesDC()))
                 if self.threadAcq.DaqInterface.AcqDCAC:
@@ -299,6 +310,9 @@ class MainWindow(Qt.QWidget):
         Ts = time.time() - self.OldTime
         self.Tss.append(Ts)
         self.OldTime = time.time()
+        self.on_MainCounter(NewData=self.threadAcq.aiData,
+                            Fs=self.SamplingPar.SampSet.param('Fs').value()
+                            )
 
         if self.threadSave is not None:
             # print('aidata-->', self.threadAcq.aiData.shape)
@@ -332,7 +346,13 @@ class MainWindow(Qt.QWidget):
 
         
         print('Sample time', Ts, np.mean(self.Tss))
-
+        
+    def on_MainCounter(self, NewData, Fs):
+        NewTime = len(NewData[:,0])*(1/Fs)
+        self.ElapsedTime = self.ElapsedTime+NewTime
+        print(self.ElapsedTime)
+        self.FullTimer.setText(str(format(self.ElapsedTime, ".2f")))
+        
     def on_Sweep_start(self):
         if self.threadAcq is None:
             self.Paused = False
