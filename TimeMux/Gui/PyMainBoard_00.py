@@ -240,7 +240,7 @@ class MainWindow(Qt.QWidget):
             self.threadAcq.NewTimeData.connect(self.on_NewSample)
             self.threadAcq.start()
             self.on_ResetGraph()
-            EveryN  = GenKwargs['Refresh']*self.SamplingPar.SampSet.param('Fs').value()
+            
             self.MainTimer = TimerMod.GeneralTimer()
             self.MainTimer.TimerDone.connect(self.on_MainCounter)
             self.FullTimer.setText("0:00")
@@ -289,7 +289,7 @@ class MainWindow(Qt.QWidget):
         else:
             self.threadAcq.DaqInterface.Stop()
             self.threadAcq = None
-            self.MainTimer.Stop()
+            self.MainTimer.terminate()
 
             if self.threadSave is not None:
                 self.threadSave.terminate()
