@@ -27,6 +27,14 @@ SampSettingConf = ({'title': 'Channels Config',
                                   'name': 'AcqDCAC',
                                   'type': 'bool',
                                   'value': False},
+                                 {'name': 'EnableAll',
+                                  'title': 'Enable all channels',
+                                  'type': 'action',
+                                  },
+                                 {'name': 'DisableAll',
+                                  'title': 'Disable all channels',
+                                  'type': 'action',
+                                  },
                                  {'tittle': 'Channels',
                                   'name': 'Channels',
                                   'type': 'group',
@@ -164,6 +172,8 @@ class SampSetParam(pTypes.GroupParameter):
         self.ChsConfig.param('AcqAC').sigValueChanged.connect(self.on_Acq_Changed)
         self.ChsConfig.param('AcqDC').sigValueChanged.connect(self.on_Acq_Changed)
         self.ChsConfig.param('AcqDCAC').sigValueChanged.connect(self.on_Acq_Changed)
+        self.ChsConfig.param('EnableAll').sigActivated.connect(self.on_EnableAll)
+        self.ChsConfig.param('DisableAll').sigActivated.connect(self.on_DisableAll)
         self.Fs.sigValueChanged.connect(self.on_Fs_Changed)
 
     def on_Acq_Changed(self):
@@ -176,7 +186,17 @@ class SampSetParam(pTypes.GroupParameter):
                 self.Acq[p.name()] = p.value()
         self.on_Fs_Changed()
         self.NewConf.emit()
+        
+    def on_EnableAll(self):
+        for p in self.Channels.children():
+            p.setValue(True)
+        self.on_Ch_Changed()
 
+    def on_DisableAll(self):
+        for p in self.Channels.children():
+            p.setValue(False)   
+        self.on_Ch_Changed()
+        
     def on_Fs_Changed(self):
         if self.Chs:
             Index = 1
