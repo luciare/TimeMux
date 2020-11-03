@@ -28,6 +28,7 @@ from PyqtTools.PlotModule import PSDPlotter as PSDPlt
 from PyqtTools.PlotModule import PSDParameters as PSDPltPars
 # import PyqtTools.CharacterizationModule as Charact
 import Modules.CharacterizationModule as Charact
+import Modules.TimerMod as TimerMod
 import TimeMux.DataAcquisition_Time_Freq as AcqMod
 
 
@@ -239,8 +240,13 @@ class MainWindow(Qt.QWidget):
             self.threadAcq.NewTimeData.connect(self.on_NewSample)
             self.threadAcq.start()
             self.on_ResetGraph()
-            self.ElapsedTime = 0.00
+            EveryN  = GenKwargs['Refresh']*self.SamplingPar.SampSet.param('Fs').value()
+            self.MainTimer = TimerMod.GeneralTimer()
+            self.MainTimer.TimerDone.connect(self.on_MainCounter)
             self.FullTimer.setText("0:00")
+            self.MainTimer.InitTime = time.time()
+            self.MainTimer.start()
+            
             PlotterKwargs = self.PlotParams.GetParams()
 
 #            FileName = self.Parameters.param('File Path').value()
@@ -283,6 +289,7 @@ class MainWindow(Qt.QWidget):
         else:
             self.threadAcq.DaqInterface.Stop()
             self.threadAcq = None
+            self.MainTimer.Stop()
 
             if self.threadSave is not None:
                 self.threadSave.terminate()
@@ -310,9 +317,6 @@ class MainWindow(Qt.QWidget):
         Ts = time.time() - self.OldTime
         self.Tss.append(Ts)
         self.OldTime = time.time()
-        self.on_MainCounter(NewData=self.threadAcq.aiData,
-                            Fs=self.SamplingPar.SampSet.param('Fs').value()
-                            )
 
         if self.threadSave is not None:
             # print('aidata-->', self.threadAcq.aiData.shape)
@@ -347,11 +351,8 @@ class MainWindow(Qt.QWidget):
         
         print('Sample time', Ts, np.mean(self.Tss))
         
-    def on_MainCounter(self, NewData, Fs):
-        NewTime = len(NewData[:,0])*(1/Fs)
-        self.ElapsedTime = self.ElapsedTime+NewTime
-        print(self.ElapsedTime)
-        self.FullTimer.setText(str(format(self.ElapsedTime, ".2f")))
+    def on_MainCounter(self):
+        self.FullTimer.setText(str(format(self.MainTimer.ElapsedTime, ".2f")))
         
     def on_Sweep_start(self):
         if self.threadAcq is None:
