@@ -32,31 +32,96 @@ import Modules.TimerMod as TimerMod
 import TimeMux.DataAcquisition_Time_Freq as AcqMod
 
 
-# estoy habrá que improtarlo de otra manera
-aiChannels = {'Ch01': ('ai0', 'ai8'),
-              'Ch02': ('ai1', 'ai9'),
-              'Ch03': ('ai2', 'ai10'),
-              'Ch04': ('ai3', 'ai11'),
-              'Ch05': ('ai4', 'ai12'),
-              'Ch06': ('ai5', 'ai13'),
-              'Ch07': ('ai6', 'ai14'),
-              'Ch08': ('ai7', 'ai15'),
-              'Ch09': ('ai16', 'ai24'),
-              'Ch10': ('ai17', 'ai25'),
-              'Ch11': ('ai18', 'ai26'),
-              'Ch12': ('ai19', 'ai27'),
-              'Ch13': ('ai20', 'ai28'),
-              'Ch14': ('ai21', 'ai29'),
-              'Ch15': ('ai22', 'ai30'),
-              'Ch16': ('ai23', 'ai31'),
-              }
+# MAINBOARD
+# aiChannels = {'Ch01': ('ai0', 'ai8'),
+#               'Ch02': ('ai1', 'ai9'),
+#               'Ch03': ('ai2', 'ai10'),
+#               'Ch04': ('ai3', 'ai11'),
+#               'Ch05': ('ai4', 'ai12'),
+#               'Ch06': ('ai5', 'ai13'),
+#               'Ch07': ('ai6', 'ai14'),
+#               'Ch08': ('ai7', 'ai15'),
+#               'Ch09': ('ai16', 'ai24'),
+#               'Ch10': ('ai17', 'ai25'),
+#               'Ch11': ('ai18', 'ai26'),
+#               'Ch12': ('ai19', 'ai27'),
+#               'Ch13': ('ai20', 'ai28'),
+#               'Ch14': ('ai21', 'ai29'),
+#               'Ch15': ('ai22', 'ai30'),
+#               'Ch16': ('ai23', 'ai31'),
+#               }
 
+# DOChannels = ['port0/line0:15', ]
+
+# # DOChannels = ['port0/line0:9', ]
+
+# aoChannels = ['ao1', 'ao0']
+
+# MB4.2
+aiChannels = {'Ch09': ('ai0', 'ai8'),
+                'Ch10': ('ai1', 'ai9'),
+                'Ch11': ('ai2', 'ai10'),
+                'Ch12': ('ai3', 'ai11'),
+                'Ch13': ('ai4', 'ai12'),
+                'Ch14': ('ai5', 'ai13'),
+                'Ch15': ('ai6', 'ai14'),
+                'Ch16': ('ai7', 'ai15'),
+                'Ch01': ('ai16', 'ai24'),
+                'Ch02': ('ai17', 'ai25'),
+                'Ch03': ('ai18', 'ai26'),
+                'Ch04': ('ai19', 'ai27'),
+                'Ch05': ('ai20', 'ai28'),
+                'Ch06': ('ai21', 'ai29'),
+                'Ch07': ('ai22', 'ai30'),
+                'Ch08': ('ai23', 'ai31'),
+              }
 DOChannels = ['port0/line0:15', ]
 
 # DOChannels = ['port0/line0:9', ]
 
 aoChannels = ['ao1', 'ao0']
 
+# MB4.2
+# {'aiChannels': {'Ch09': ('ai0', 'ai8'),
+#                 'Ch10': ('ai1', 'ai9'),
+#                 'Ch11': ('ai2', 'ai10'),
+#                 'Ch12': ('ai3', 'ai11'),
+#                 'Ch13': ('ai4', 'ai12'),
+#                 'Ch14': ('ai5', 'ai13'),
+#                 'Ch15': ('ai6', 'ai14'),
+#                 'Ch16': ('ai7', 'ai15'),
+#                 'Ch01': ('ai16', 'ai24'),
+#                 'Ch02': ('ai17', 'ai25'),
+#                 'Ch03': ('ai18', 'ai26'),
+#                 'Ch04': ('ai19', 'ai27'),
+#                 'Ch05': ('ai20', 'ai28'),
+#                 'Ch06': ('ai21', 'ai29'),
+#                 'Ch07': ('ai22', 'ai30'),
+#                 'Ch08': ('ai23', 'ai31'),
+#                 },
+
+# 'aoChannels': {'ChVs': 'ao1',
+#                'ChVds': 'ao0',
+#                'ChAo2': None,
+#                'ChAo3': None, },
+
+# 'ColOuts':  {'Col10': ('line0', ),
+#              'Col09': ('line1', ),
+#              'Col12': ('line2', ),
+#              'Col11': ('line3', ),
+#              'Col15': ('line4', ),
+#              'Col16': ('line5', ),
+#              'Col13': ('line6', ),
+#              'Col14': ('line7', ),
+#              'Col02': ('line8', ),
+#              'Col01': ('line9', ),
+#              'Col04': ('line10', ),
+#              'Col03': ('line11', ),
+#              'Col07': ('line12', ),
+#              'Col08': ('line13', ),
+#              'Col05': ('line14', ),
+#              'Col06': ('line15', ),        
+#              }, }
 
 class MainWindow(Qt.QWidget):
     ''' Main Window '''
